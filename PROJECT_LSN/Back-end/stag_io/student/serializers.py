@@ -197,6 +197,7 @@ class ApplicationListSerializer(serializers.ModelSerializer):
             'wilaya',
             'offer_type',
             'status',
+            'rejection_reason',
             'created_at',
         ]
 
@@ -267,6 +268,7 @@ class ApplicationDetailSerializer(serializers.ModelSerializer):
             'required_skills',
             'status',
             'agreement_available',
+            'rejection_reason',
             'created_at',
             'updated_at',
         ]

@@ -83,6 +83,7 @@ class AdminInternshipSerializer(serializers.ModelSerializer):
             'end_date',
             'status',
             'student_image',
+            'rejection_reason',
             'created_at',
             'updated_at',
         ]

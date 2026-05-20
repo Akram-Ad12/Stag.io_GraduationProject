@@ -482,6 +482,8 @@ export default function AdminDashboard() {
   const [selectedInternship, setSelectedInternship] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [companyProfileData, setCompanyProfileData] = useState(null);
+  const [rejectionModalId, setRejectionModalId] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
 
   useEffect(() => { 
     loadData(true); 
@@ -522,10 +524,15 @@ export default function AdminDashboard() {
         setSelectedInternship(res.data);
         return;
       }
+
+      if (action === 'reject') {
+        setRejectionModalId(id);
+        setRejectionReason('');
+        return;
+      }
       
       setActionLoading(action);
       if (action === 'approve') await validateInternship(id);
-      else await rejectInternship(id);
       
       await loadData(false);
       
@@ -537,6 +544,35 @@ export default function AdminDashboard() {
       
     } catch (err) {
       console.error('Action failed', err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const confirmReject = async () => {
+    if (!rejectionModalId) return;
+    try {
+      setActionLoading('reject');
+      await rejectInternship(rejectionModalId, rejectionReason);
+      
+      await loadData(false);
+      
+      // Update selectedInternship status and rejection_reason so the buttons/status swap inside the open review modal
+      setSelectedInternship(prev => {
+        if (prev && prev.id === rejectionModalId) {
+          return { 
+            ...prev, 
+            status: 'rejected',
+            rejection_reason: rejectionReason
+          };
+        }
+        return prev;
+      });
+      
+      setRejectionModalId(null);
+      setRejectionReason('');
+    } catch (err) {
+      console.error('Rejection failed', err);
     } finally {
       setActionLoading(null);
     }
@@ -965,6 +1001,27 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Modal>
+        )}
+
+        {/* Rejection Modal */}
+        {rejectionModalId && (
+          <div className="fixed inset-0 z-[2000] bg-gray-900/40 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in" onClick={() => setRejectionModalId(null)}>
+            <div className="bg-white rounded-[32px] p-8 sm:p-12 max-w-md w-full shadow-2xl shadow-indigo-900/10 border border-indigo-50 text-center animate-slide-up" onClick={e => e.stopPropagation()}>
+              <h3 className="text-2xl font-black text-gray-900 mb-6 tracking-tight leading-none">Reason of rejection (Optional)</h3>
+              <textarea
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="Enter reason for rejection..."
+                className="w-full h-32 px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 placeholder-gray-400 focus:bg-white focus:border-indigo-300 focus:ring-4 focus:ring-indigo-50 focus:outline-none transition-all resize-none mb-8"
+              />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button onClick={() => setRejectionModalId(null)} className="flex-1 py-4 bg-gray-50 text-gray-600 rounded-2xl font-black uppercase tracking-[2px] text-[10px] hover:bg-gray-100 hover:text-gray-900 transition-colors border border-gray-200 shadow-sm">Cancel</button>
+                <button onClick={confirmReject} disabled={actionLoading === 'reject'} className="flex-1 py-4 bg-rose-600 text-white rounded-2xl font-black uppercase tracking-[2px] text-[10px] shadow-lg shadow-rose-200 hover:bg-rose-700 hover:-translate-y-0.5 active:scale-95 transition-all flex items-center justify-center gap-2">
+                  {actionLoading === 'reject' ? <><Loader2 size={14} className="animate-spin"/> Rejecting...</> : 'Reject'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
 
       </div>

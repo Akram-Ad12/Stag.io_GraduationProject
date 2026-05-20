@@ -60,6 +60,15 @@ const ALGERIAN_WILAYAS = [
     "57 - In Salah", "58 - In Guezzam", "Remote"
 ];
 
+const ACADEMIC_YEARS = [
+  { value: 'year_1', label: 'Year 1 (License 1)' },
+  { value: 'year_2', label: 'Year 2 (License 2)' },
+  { value: 'year_3', label: 'Year 3 (License 3)' },
+  { value: 'year_4', label: 'Year 4 (Master 1)' },
+  { value: 'year_5', label: 'Year 5 (Master 2)' },
+  { value: 'doctorate', label: 'Doctorate' },
+];
+
 function OverviewView({ stats, setShowOfferModal }) {
   if (!stats) return <div className="flex justify-center py-20"><Loader2 className="animate-spin text-indigo-600" size={40} /></div>;
 
@@ -363,10 +372,18 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
                 </div>
                 <h3 className="text-2xl font-black text-gray-900 tracking-tight">{selectedStudent.student?.full_name}</h3>
                 <p className="text-indigo-600 font-bold text-sm mt-1">{selectedStudent.student?.email}</p>
-                <div className="mt-4">
-                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest bg-gray-50 px-5 py-2 rounded-full border border-gray-100 shadow-sm">
+                {selectedStudent.student?.university_name && (
+                  <p className="text-gray-500 font-bold text-xs mt-1.5 leading-snug">{selectedStudent.student.university_name}</p>
+                )}
+                <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                  <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest bg-gray-50 px-4 py-2 rounded-full border border-gray-100 shadow-sm">
                     📍 {selectedStudent.student?.wilaya || 'Algeria'}
                   </span>
+                  {selectedStudent.student?.academic_year && (
+                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest bg-indigo-50/50 px-4 py-2 rounded-full border border-indigo-100 shadow-sm">
+                      🎓 {ACADEMIC_YEARS.find(y => y.value === selectedStudent.student.academic_year)?.label || selectedStudent.student.academic_year}
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -621,6 +638,11 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
                 <div className="flex-1 min-w-0">
                   <h4 className="text-lg font-black text-gray-900 truncate">{app.student?.full_name}</h4>
                   <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest mt-1 truncate">{app.offer_title}</p>
+                  {app.student?.academic_year && (
+                    <p className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mt-1.5 truncate font-black">
+                      🎓 {ACADEMIC_YEARS.find(y => y.value === app.student.academic_year)?.label || app.student.academic_year}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="mb-4">

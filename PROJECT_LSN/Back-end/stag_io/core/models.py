@@ -290,6 +290,7 @@ class Internship(models.Model):
         choices=Status.choices,
         default=Status.PENDING,
     )
+    rejection_reason = models.TextField(blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

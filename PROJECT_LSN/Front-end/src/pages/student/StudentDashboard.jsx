@@ -360,64 +360,77 @@ function ApplicationsView({ applications, loading, handleDownloadAgreement }) {
       ) : (
         <div className="space-y-6 px-4">
           {applications.map((app) => (
-            <div key={app.id} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-8 group hover:border-indigo-100 hover:shadow-md transition-all">
-              <div className="flex items-center gap-6 w-full lg:w-auto">
-                <div className="w-20 h-20 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
-                  {app.company_logo ? (
-                    <img src={getMediaUrl(app.company_logo)} alt="Logo" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-3xl font-black text-indigo-600">{(app.company_name || 'C')[0]}</span>
+            <div key={app.id} className="bg-white p-8 rounded-[32px] border border-gray-100 shadow-sm flex flex-col group hover:border-indigo-100 hover:shadow-md transition-all">
+              <div className="flex flex-col lg:flex-row items-center justify-between gap-8 w-full">
+                <div className="flex items-center gap-6 w-full lg:w-auto">
+                  <div className="w-20 h-20 rounded-2xl bg-gray-50 flex items-center justify-center border border-gray-100 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                    {app.company_logo ? (
+                      <img src={getMediaUrl(app.company_logo)} alt="Logo" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-black text-indigo-600">{(app.company_name || 'C')[0]}</span>
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors leading-tight">{app.offer_title || app.subject}</h3>
+                    <p className="text-[lg] font-bold text-gray-500 mb-2">{app.company_name}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-indigo-100">
+                        {app.offer_duration} {app.offer_duration === 1 ? 'Month' : 'Months'}
+                      </span>
+                      {app.offer_skills?.slice(0, 3).map(sk => (
+                        <span key={sk.id} className="px-2 py-1 bg-gray-50 text-gray-500 rounded-lg text-[9px] font-black uppercase tracking-widest border border-gray-100">
+                          {sk.name}
+                        </span>
+                      ))}
+                    </div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
+                      Applied {new Date(app.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    </p>
+                  </div>
+                </div>
+
+                {/* STATUS TRACK */}
+                <div className="flex items-center gap-4">
+                  {[
+                    { label: 'Applied', done: true, icon: CheckCircle2 },
+                    { label: 'Review', done: app.status !== 'pending', icon: Timer },
+                    { label: 'Decision', done: ['validated', 'rejected'].includes(app.status), icon: app.status === 'rejected' ? XCircle : CheckCircle2 }
+                  ].map((step, idx) => (
+                    <div key={idx} className="flex items-center gap-3">
+                      <div className="flex flex-col items-center">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${step.done ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
+                          <step.icon size={20} />
+                        </div>
+                        <span className={`text-[10px] font-black uppercase tracking-widest mt-2 ${step.done ? 'text-indigo-600' : 'text-gray-400'}`}>{step.label}</span>
+                      </div>
+                      {idx < 2 && <div className={`w-8 h-0.5 rounded-full mb-5 ${step.done ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="shrink-0 flex flex-col items-end gap-4">
+                  <StatusBadge status={app.status} />
+                  {app.status === 'validated' && (
+                    <button 
+                      onClick={() => handleDownloadAgreement(app.id)}
+                      className="flex items-center gap-2 px-6 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-100 transition-all border border-emerald-200"
+                    >
+                      <Download size={14} /> Agreement
+                    </button>
                   )}
                 </div>
-                <div>
-                  <h3 className="text-2xl font-black text-gray-900 mb-1 group-hover:text-indigo-600 transition-colors leading-tight">{app.offer_title || app.subject}</h3>
-                  <p className="text-[lg] font-bold text-gray-500 mb-2">{app.company_name}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <span className="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-[9px] font-black uppercase tracking-widest border border-indigo-100">
-                      {app.offer_duration} {app.offer_duration === 1 ? 'Month' : 'Months'}
-                    </span>
-                    {app.offer_skills?.slice(0, 3).map(sk => (
-                      <span key={sk.id} className="px-2 py-1 bg-gray-50 text-gray-500 rounded-lg text-[9px] font-black uppercase tracking-widest border border-gray-100">
-                        {sk.name}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    Applied {new Date(app.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              </div>
+
+              {app.status === 'rejected' && app.rejection_reason && (
+                <div className="w-full mt-6 p-5 bg-rose-50 border border-rose-100 rounded-[24px] text-left animate-fade-in">
+                  <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1.5">
+                    reason of rejection provided by the administration
+                  </p>
+                  <p className="text-sm font-bold text-gray-700 leading-relaxed">
+                    {app.rejection_reason}
                   </p>
                 </div>
-              </div>
-
-              {/* STATUS TRACK */}
-              <div className="flex items-center gap-4">
-                {[
-                  { label: 'Applied', done: true, icon: CheckCircle2 },
-                  { label: 'Review', done: app.status !== 'pending', icon: Timer },
-                  { label: 'Decision', done: ['validated', 'rejected'].includes(app.status), icon: app.status === 'rejected' ? XCircle : CheckCircle2 }
-                ].map((step, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <div className="flex flex-col items-center">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border transition-all ${step.done ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>
-                        <step.icon size={20} />
-                      </div>
-                      <span className={`text-[10px] font-black uppercase tracking-widest mt-2 ${step.done ? 'text-indigo-600' : 'text-gray-400'}`}>{step.label}</span>
-                    </div>
-                    {idx < 2 && <div className={`w-8 h-0.5 rounded-full mb-5 ${step.done ? 'bg-indigo-600' : 'bg-gray-200'}`}></div>}
-                  </div>
-                ))}
-              </div>
-
-              <div className="shrink-0 flex flex-col items-end gap-4">
-                <StatusBadge status={app.status} />
-                {app.status === 'validated' && (
-                  <button 
-                    onClick={() => handleDownloadAgreement(app.id)}
-                    className="flex items-center gap-2 px-6 py-2 bg-emerald-50 text-emerald-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-emerald-100 transition-all border border-emerald-200"
-                  >
-                    <Download size={14} /> Agreement
-                  </button>
-                )}
-              </div>
+              )}
             </div>
           ))}
         </div>

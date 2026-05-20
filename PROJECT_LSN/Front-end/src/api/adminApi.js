@@ -12,7 +12,7 @@ export const getAdminInternshipDetails = (id) => api.get(`/api/administration/in
 export const downloadAdminAgreement = (id) =>
   api.get(`/api/administration/internships/${id}/agreement/`, { responseType: 'blob' });
 export const validateInternship = (id) => api.patch(`/api/administration/internships/${id}/validate/`);
-export const rejectInternship = (id) => api.patch(`/api/administration/internships/${id}/reject/`);
+export const rejectInternship = (id, reason) => api.patch(`/api/administration/internships/${id}/reject/`, { rejection_reason: reason });
 
 // 5.3 Statistics & Analytics
 export const getStatsSummary = () => api.get('/api/administration/statistics/');

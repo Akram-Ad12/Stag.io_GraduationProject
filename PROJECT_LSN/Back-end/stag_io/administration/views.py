@@ -267,6 +267,8 @@ class RejectInternshipView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        rejection_reason = request.data.get('rejection_reason', '')
+        internship.rejection_reason = rejection_reason
         internship.status = Internship.Status.REJECTED
         internship.save()
 
