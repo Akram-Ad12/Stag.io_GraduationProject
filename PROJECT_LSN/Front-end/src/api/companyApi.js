@@ -40,3 +40,9 @@ export const resetCompanyData = (password) => api.post('/api/company/reset-data/
 // 4.4 Notifications (uses the shared core notification system)
 export const getCompanyNotifications = () => api.get('/api/notifications/');
 export const markCompanyNotificationsRead = () => api.patch('/api/notifications/read-all/');
+
+export const downloadCompanyAgreement = (internshipId) => {
+  return api.get(`/api/company/applications/${internshipId}/document/`, {
+    responseType: 'blob',
+  });
+};

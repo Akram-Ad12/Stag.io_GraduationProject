@@ -461,3 +461,82 @@ class RejectApplicantTests(TestCase):
         self.client.force_authenticate(user=None)
         res = self.client.post(application_reject_url(self.internship.id))
         self.assertEqual(res.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+# ── Download Agreement ────────────────────────────────────────────────
+
+class DownloadAgreementTests(TestCase):
+    """GET /api/company/applications/<id>/document/."""
+
+    def setUp(self):
+        self.client = APIClient()
+        self.university = create_university()
+        self.company = create_company()
+        self.offer = create_offer(self.company)
+        self.student = create_student(self.university)
+        self.internship = create_internship(
+            self.student, self.company, self.offer,
+            status=Internship.Status.VALIDATED,
+        )
+        self.client.force_authenticate(user=self.company)
+
+    def test_download_agreement_for_validated_internship(self):
+        from core.models import InternshipAgreement
+        from django.core.files.base import ContentFile
+
+        agreement = InternshipAgreement.objects.create(internship=self.internship)
+        agreement.pdf_file.save(
+            'agreement.pdf',
+            ContentFile(b'PDF content'),
+        )
+
+        url = reverse('company:application-document', args=[self.internship.id])
+        res = self.client.get(url)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res['Content-Type'], 'application/pdf')
+        self.assertEqual(
+            res['Content-Disposition'],
+            f'attachment; filename="internship_agreement_{self.internship.id}.pdf"'
+        )
+        self.assertEqual(b''.join(res.streaming_content), b'PDF content')
+
+    def test_download_agreement_not_validated_returns_403(self):
+        self.internship.status = Internship.Status.ACCEPTED_BY_COMPANY
+        self.internship.save()
+
+        url = reverse('company:application-document', args=[self.internship.id])
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_download_agreement_validated_but_no_pdf_returns_404(self):
+        url = reverse('company:application-document', args=[self.internship.id])
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_download_agreement_other_company_returns_404(self):
+        other_company = create_company(email='other@test.com', name='Other')
+        other_offer = create_offer(other_company, title='Other Offer')
+        other_internship = create_internship(
+            self.student, other_company, other_offer,
+            status=Internship.Status.VALIDATED,
+        )
+
+        from core.models import InternshipAgreement
+        from django.core.files.base import ContentFile
+        agreement = InternshipAgreement.objects.create(internship=other_internship)
+        agreement.pdf_file.save(
+            'agreement.pdf',
+            ContentFile(b'PDF content'),
+        )
+
+        url = reverse('company:application-document', args=[other_internship.id])
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_student_cannot_download_agreement_from_company_endpoint(self):
+        self.client.force_authenticate(user=self.student)
+        url = reverse('company:application-document', args=[self.internship.id])
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+

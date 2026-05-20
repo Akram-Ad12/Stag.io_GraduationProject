@@ -37,6 +37,11 @@ urlpatterns = [
         views.RejectApplicantView.as_view(),
         name='application-reject',
     ),
+    path(
+        'applications/<int:pk>/document/',
+        views.DownloadAgreementView.as_view(),
+        name='application-document',
+    ),
     # Statistics
     path(
         'stats/',

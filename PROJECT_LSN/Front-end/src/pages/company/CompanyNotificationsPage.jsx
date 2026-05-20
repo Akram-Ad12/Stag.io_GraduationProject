@@ -117,7 +117,13 @@ export default function CompanyNotificationsPage() {
                   <div className="flex items-center gap-4">
                     {n.internship_id && (
                       <button 
-                        onClick={() => navigate('/company/dashboard')}
+                        onClick={() => {
+                          if (n.offer_id) {
+                            navigate(`/company/internships/${n.offer_id}?appId=${n.internship_id}`);
+                          } else {
+                            navigate('/company/dashboard');
+                          }
+                        }}
                         className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-sm"
                       >
                         <ExternalLink size={14} /> Review Application

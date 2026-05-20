@@ -298,7 +298,7 @@ function ExploreView({ offers, loading, loadData, handleApply, onSelectOffer }) 
                     {offer.type === 'paid' && offer.salary_per_week && (
                       <div className="space-y-1">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Salary</p>
-                        <p className="text-sm font-black text-emerald-600">{offer.salary_per_week} DA/month</p>
+                        <p className="text-sm font-black text-emerald-600">{offer.salary_per_week} DA/wk</p>
                       </div>
                     )}
                   </div>

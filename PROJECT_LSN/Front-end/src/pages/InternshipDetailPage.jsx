@@ -176,7 +176,7 @@ export default function InternshipDetailPage() {
               {offer.salary && (
                 <div className="space-y-1.5">
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Zap size={12} /> Stipend</p>
-                  <p className="text-lg font-black text-gray-900">{offer.salary} DZD/mo</p>
+                  <p className="text-lg font-black text-gray-900">{offer.salary} DZD/wk</p>
                 </div>
               )}
             </div>

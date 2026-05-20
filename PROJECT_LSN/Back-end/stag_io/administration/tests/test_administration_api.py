@@ -345,7 +345,16 @@ class AdminNotificationTests(TestCase):
 
     def test_list_notifications(self):
         """Admin sees their own notifications."""
-        internship = create_internship(self.student, self.company)
+        from core.models import InternshipOffer
+        offer = InternshipOffer.objects.create(
+            company=self.company,
+            title='Software Engineer',
+            description='Django coding',
+            location='Algiers',
+            start_date=date(2026, 4, 1),
+            end_date=date(2026, 6, 30),
+        )
+        internship = create_internship(self.student, self.company, offer=offer)
         create_notification(self.admin_user, internship)
 
         res = self.client.get(NOTIFICATION_LIST_URL)
@@ -354,6 +363,7 @@ class AdminNotificationTests(TestCase):
         self.assertEqual(len(res.data), 1)
         self.assertEqual(res.data[0]['student_name'], self.student.full_name)
         self.assertEqual(res.data[0]['company_name'], self.company.name)
+        self.assertEqual(res.data[0]['offer_id'], offer.id)
 
     def test_list_unread_notifications(self):
         """Only unread notifications are returned."""

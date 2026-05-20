@@ -150,24 +150,29 @@ export default function StudentOfferModal({ offerId, onClose, onApplySuccess }) 
                           <p className="font-bold text-gray-900">{offer.company_details.phone_number}</p>
                         </div>
                       )}
-                      {offer.company_details.website && (
-                        <div>
-                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Website</p>
-                          <a href={offer.company_details.website} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-600 hover:underline">{offer.company_details.website}</a>
-                        </div>
-                      )}
                     </div>
                     
-                    <div>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Company Description</p>
-                      {offer.company_details.description ? (
-                        <div className="space-y-3">
-                          {offer.company_details.description.split('\n').filter(p => p.trim()).map((p, i) => (
-                            <p key={i} className="text-sm text-gray-600 font-medium leading-relaxed">{p}</p>
-                          ))}
+                    <div className="space-y-6">
+                      <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Company Description</p>
+                        {offer.company_details.description ? (
+                          <div className="space-y-3">
+                            {offer.company_details.description.split('\n').filter(p => p.trim()).map((p, i) => (
+                              <p key={i} className="text-sm text-gray-600 font-medium leading-relaxed">{p}</p>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-400 font-medium italic">No description provided.</p>
+                        )}
+                      </div>
+                      
+                      {offer.company_details.website && (
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 shadow-sm">Website</p>
+                          <a href={offer.company_details.website.startsWith('http') ? offer.company_details.website : `https://${offer.company_details.website}`} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-600 hover:underline flex items-center gap-1.5 transition-all w-fit">
+                            <Globe size={14} /> Visit Site
+                          </a>
                         </div>
-                      ) : (
-                        <p className="text-sm text-gray-400 font-medium italic">No description provided.</p>
                       )}
                     </div>
                   </div>
@@ -206,7 +211,7 @@ export default function StudentOfferModal({ offerId, onClose, onApplySuccess }) 
                     {offer.type === 'paid' && offer.salary_per_week && (
                       <div className="space-y-1">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Zap size={12} /> Salary</p>
-                        <p className="text-lg font-black text-emerald-600">{offer.salary_per_week} DA/month</p>
+                        <p className="text-lg font-black text-emerald-600">{offer.salary_per_week} DA/wk</p>
                       </div>
                     )}
                     {offer.start_date && (

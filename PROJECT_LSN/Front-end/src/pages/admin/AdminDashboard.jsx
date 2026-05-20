@@ -10,7 +10,8 @@ import {
   Loader2,
   BarChart3,
   Clock,
-  Bell
+  Bell,
+  Filter
 } from 'lucide-react';
 import { useNavigate, Routes, Route } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout';
@@ -304,12 +305,90 @@ function OverviewView({ internships, summary, trends, statusStats, studentStats,
 
 // ── INTERNSHIPS VIEW ───────────────────────────────────────────────────────────
 function InternshipsView({ internships, loading, handleAction, handleGeneratePDF, setSelectedInternship }) {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filters, setFilters] = useState({
+    validated: true,
+    rejected: true,
+    pending: true,
+  });
+
+  const filteredInternships = internships.filter((item) => {
+    if (item.status === 'validated') return filters.validated;
+    if (item.status === 'rejected') return filters.rejected;
+    if (item.status === 'pending' || item.status === 'accepted_by_company') return filters.pending;
+    return true;
+  });
+
+  const hasActiveFilters = !filters.validated || !filters.rejected || !filters.pending;
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center px-2">
-        <h2 className="text-2xl font-black text-gray-900 tracking-tight">All Internships</h2>
-        <div className="bg-white px-4 py-1.5 rounded-xl border border-gray-200 shadow-sm text-[11px] font-black text-indigo-600 uppercase tracking-widest">
-          {internships.length} Total
+        <h2 className="text-2xl font-black text-gray-900 tracking-tight">All Internship Applications</h2>
+        
+        <div className="flex items-center gap-3">
+          {/* Filter button and dropdown */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-sm transition-all cursor-pointer"
+            >
+              <Filter size={12} className="text-gray-500" />
+              Filter
+              {hasActiveFilters && (
+                <span className="w-1.5 h-1.5 bg-indigo-600 rounded-full"></span>
+              )}
+            </button>
+
+            {showDropdown && (
+              <>
+                <div className="fixed inset-0 z-20" onClick={() => setShowDropdown(false)}></div>
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-gray-200 shadow-xl z-30 p-4 space-y-2.5 animate-fade-in">
+                  <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Filter by Status</p>
+                  
+                  <button
+                    onClick={() => setFilters(prev => ({ ...prev, pending: !prev.pending }))}
+                    className={`flex items-center justify-between w-full px-3 py-2 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                      filters.pending 
+                        ? 'bg-amber-50 text-amber-700 border-amber-200' 
+                        : 'bg-gray-50 text-gray-400 border-gray-200'
+                    }`}
+                  >
+                    <span>Pending</span>
+                    <span className={`w-2 h-2 rounded-full ${filters.pending ? 'bg-amber-500' : 'bg-gray-300'}`}></span>
+                  </button>
+
+                  <button
+                    onClick={() => setFilters(prev => ({ ...prev, validated: !prev.validated }))}
+                    className={`flex items-center justify-between w-full px-3 py-2 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                      filters.validated 
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+                        : 'bg-gray-50 text-gray-400 border-gray-200'
+                    }`}
+                  >
+                    <span>Validated</span>
+                    <span className={`w-2 h-2 rounded-full ${filters.validated ? 'bg-emerald-500' : 'bg-gray-300'}`}></span>
+                  </button>
+
+                  <button
+                    onClick={() => setFilters(prev => ({ ...prev, rejected: !prev.rejected }))}
+                    className={`flex items-center justify-between w-full px-3 py-2 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer ${
+                      filters.rejected 
+                        ? 'bg-rose-50 text-rose-700 border-rose-200' 
+                        : 'bg-gray-50 text-gray-400 border-gray-200'
+                    }`}
+                  >
+                    <span>Rejected</span>
+                    <span className={`w-2 h-2 rounded-full ${filters.rejected ? 'bg-rose-500' : 'bg-gray-300'}`}></span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="bg-white px-4 py-1.5 rounded-xl border border-gray-200 shadow-sm text-[11px] font-black text-indigo-600 uppercase tracking-widest">
+            {filteredInternships.length === internships.length ? `${internships.length} Total` : `${filteredInternships.length} of ${internships.length}`}
+          </div>
         </div>
       </div>
 
@@ -320,6 +399,12 @@ function InternshipsView({ internships, loading, handleAction, handleGeneratePDF
           <FileText size={48} className="mx-auto text-gray-300 mb-4" />
           <p className="font-black text-gray-900 text-xl">No internships yet</p>
           <p className="text-gray-500 font-medium mt-2">Internships appear here once students apply and companies accept.</p>
+        </div>
+      ) : filteredInternships.length === 0 ? (
+        <div className="py-20 text-center bg-white rounded-3xl border border-gray-200 shadow-sm">
+          <FileText size={48} className="mx-auto text-gray-300 mb-4" />
+          <p className="font-black text-gray-900 text-xl">No matching applications</p>
+          <p className="text-gray-500 font-medium mt-2">Try adjusting your active status filters.</p>
         </div>
       ) : (
         <div className="bg-white rounded-3xl border border-gray-200 shadow-sm overflow-hidden">
@@ -334,7 +419,7 @@ function InternshipsView({ internships, loading, handleAction, handleGeneratePDF
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {internships.map((item) => (
+                {filteredInternships.map((item) => (
                   <tr 
                     key={item.id} 
                     onClick={() => handleAction(item.id, 'select')}
@@ -396,6 +481,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedInternship, setSelectedInternship] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
+  const [companyProfileData, setCompanyProfileData] = useState(null);
 
   useEffect(() => { 
     loadData(true); 
@@ -566,6 +652,7 @@ export default function AdminDashboard() {
                 
                 {/* STUDENT PROFILE (LEFT) */}
                 <div className="flex-1 space-y-6 w-full">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight border-b-2 border-slate-100 pb-3">Student CV</h3>
                   <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm flex flex-col items-center text-center space-y-4">
                     <div className="w-32 h-32 rounded-full overflow-hidden border-8 border-white shadow-xl bg-indigo-100 flex items-center justify-center shrink-0 relative group">
                       {selectedInternship.student_cv?.profile_image ? (
@@ -576,7 +663,10 @@ export default function AdminDashboard() {
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-tight">{selectedInternship.student_name}</h3>
-                      <p className="text-indigo-600 font-bold text-sm">{selectedInternship.student_email}</p>
+                      <p className="text-indigo-600 font-bold text-sm leading-tight">{selectedInternship.student_email}</p>
+                      {selectedInternship.student_cv?.academic_year && (
+                        <p className="text-sm font-bold text-slate-500 mt-1">{selectedInternship.student_cv.academic_year}</p>
+                      )}
                       <div className="flex items-center justify-center gap-2 mt-4">
                         <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-slate-50 border border-slate-100 px-4 py-1.5 rounded-full shadow-sm">
                           📍 {selectedInternship.student_cv?.wilaya || 'Algeria'}
@@ -629,38 +719,106 @@ export default function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* DIVIDER */}
+                <div className="hidden lg:block w-px bg-slate-200 self-stretch"></div>
+                <div className="w-full h-px bg-slate-200 lg:hidden my-2"></div>
+
                 {/* OFFER DETAILS (RIGHT) */}
                 <div className="flex-1 space-y-6 w-full">
-                  <div className="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl shadow-indigo-100 relative overflow-hidden">
+                  <h3 className="text-xl font-black text-slate-900 tracking-tight border-b-2 border-slate-100 pb-3">Company Information</h3>
+                  <div 
+                    className="bg-indigo-600 p-8 rounded-3xl text-white shadow-xl shadow-indigo-100 relative overflow-hidden bg-cover bg-center"
+                    style={selectedInternship.offer_details?.image ? { backgroundImage: `url(${getMediaUrl(selectedInternship.offer_details.image)})` } : {}}
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/90 to-indigo-600/70 z-0"></div>
                     <div className="relative z-10">
                       <div className="flex justify-between items-start mb-4">
-                        <span className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[9px] font-black uppercase tracking-widest">
-                          {selectedInternship.offer_details?.type || 'Internship'}
-                        </span>
-                        <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center">
+                        <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden relative z-10">
                           {selectedInternship.company_details?.logo ? (
                             <img src={getMediaUrl(selectedInternship.company_details.logo)} alt="" className="w-full h-full object-cover rounded-xl" />
                           ) : (
-                            <span className="text-indigo-600 font-black">{(selectedInternship.company_name || 'C')[0]}</span>
+                            <span className="text-indigo-600 font-black text-xl">{(selectedInternship.company_name || 'C')[0]}</span>
                           )}
                         </div>
                       </div>
                       <h4 className="text-2xl font-black tracking-tight mb-2 leading-tight">
                         {selectedInternship.offer_title || selectedInternship.subject}
                       </h4>
-                      <p className="text-indigo-100 text-xs font-bold flex items-center gap-2">
-                        {selectedInternship.company_name} · {selectedInternship.offer_details?.location || 'Remote'}
+                      <p className="text-indigo-100 text-sm font-bold pointer-events-auto">
+                        <span>{selectedInternship.company_name}</span>
                       </p>
+                      {selectedInternship.company_details && (
+                        <button 
+                          onClick={(e) => {
+                              e.stopPropagation();
+                              setCompanyProfileData(selectedInternship.company_details);
+                          }}
+                          className="w-full py-3 mt-4 bg-white border border-gray-200 text-gray-700 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-gray-100 transition-colors"
+                        >
+                          View Company Profile
+                        </button>
+                      )}
                     </div>
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                   </div>
 
                   <div className="space-y-6 px-2">
+                    <h4 className="text-lg font-black text-slate-900 tracking-tight">Offer Details</h4>
+                    
                     <div>
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-3">Offer Description</p>
                       <p className="text-sm text-gray-600 font-medium leading-relaxed">
                         {selectedInternship.offer_details?.description || selectedInternship.description || 'No description available.'}
                       </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {selectedInternship.offer_details?.duration_display && (
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-3">Duration</p>
+                          <p className="text-sm font-black text-slate-800">
+                            {selectedInternship.offer_details.duration_display}
+                          </p>
+                        </div>
+                      )}
+                      
+                      {selectedInternship.offer_details?.start_date && (
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-3">Start Date</p>
+                          <p className="text-sm font-black text-slate-800">
+                            {new Date(selectedInternship.offer_details.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                      )}
+
+                      {selectedInternship.offer_details?.end_date && (
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-3">End Date</p>
+                          <p className="text-sm font-black text-slate-800">
+                            {new Date(selectedInternship.offer_details.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                      )}
+
+                      <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-3">Location</p>
+                        <p className="text-sm font-black text-slate-800">
+                          {selectedInternship.offer_details?.is_remote ? 'Remote' : (selectedInternship.offer_details?.wilaya || selectedInternship.offer_details?.location || 'Algeria')}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-3">Payment Type</p>
+                        <p className="text-sm font-black text-slate-800 capitalize">
+                          {selectedInternship.offer_details?.type || 'Unpaid'}
+                        </p>
+                      </div>
+                      {selectedInternship.offer_details?.type === 'paid' && selectedInternship.offer_details?.salary_per_week && (
+                        <div>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-[2px] mb-3">Weekly Salary</p>
+                          <p className="text-sm font-black text-emerald-600 flex items-center gap-1.5">
+                            <Zap size={14} /> {selectedInternship.offer_details.salary_per_week} DZD/wk
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -730,6 +888,83 @@ export default function AdminDashboard() {
           </Modal>
         )}
           </>
+        )}
+
+        {/* Company Profile Modal */}
+        {companyProfileData && (
+          <Modal
+            isOpen={!!companyProfileData}
+            onClose={() => setCompanyProfileData(null)}
+            title={`About ${companyProfileData.name || 'Company'}`}
+            size="lg"
+          >
+            <div className="p-8">
+              <div className="flex items-center gap-6 mb-10 pb-8 border-b border-gray-100">
+                <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center shadow-lg border border-gray-100 overflow-hidden relative group shrink-0">
+                  {companyProfileData.logo ? (
+                    <img src={getMediaUrl(companyProfileData.logo)} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                  ) : (
+                    <span className="text-3xl font-black text-indigo-600">{(companyProfileData.name || 'C')[0]}</span>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black tracking-tight text-gray-900 mb-2">{companyProfileData.name}</h3>
+                  <div className="flex gap-3">
+                    <span className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-indigo-100/50 shadow-sm">
+                      {companyProfileData.industry || 'Company'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-6">
+                  {companyProfileData.industry && (
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 shadow-sm">Industry</p>
+                      <p className="font-bold text-gray-900">{companyProfileData.industry}</p>
+                    </div>
+                  )}
+                  {companyProfileData.wilaya && (
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 shadow-sm">Location</p>
+                      <p className="font-bold text-gray-900">{companyProfileData.wilaya}</p>
+                    </div>
+                  )}
+                  {companyProfileData.phone_number && (
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 shadow-sm">Phone Number</p>
+                      <p className="font-bold text-gray-900">{companyProfileData.phone_number}</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 shadow-sm">Company Description</p>
+                    {companyProfileData.description ? (
+                      <div className="space-y-3">
+                        {companyProfileData.description.split('\n').filter(p => p.trim()).map((p, i) => (
+                          <p key={i} className="text-sm text-gray-600 font-medium leading-relaxed">{p}</p>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-400 font-medium italic">No description provided.</p>
+                    )}
+                  </div>
+                  
+                  {companyProfileData.website && (
+                    <div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 shadow-sm">Website</p>
+                      <a href={companyProfileData.website.startsWith('http') ? companyProfileData.website : `https://${companyProfileData.website}`} target="_blank" rel="noopener noreferrer" className="font-bold text-indigo-600 hover:underline flex items-center gap-1.5 transition-all w-fit">
+                        <Globe size={14} /> Visit Site
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Modal>
         )}
 
       </div>

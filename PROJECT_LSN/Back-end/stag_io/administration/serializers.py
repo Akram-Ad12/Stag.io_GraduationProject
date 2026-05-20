@@ -109,6 +109,11 @@ class AdminInternshipDetailSerializer(AdminInternshipSerializer):
             return {
                 'logo': obj.company.logo.url if getattr(obj.company, 'logo', None) else None,
                 'name': obj.company.name,
+                'description': obj.company.description,
+                'wilaya': obj.company.wilaya,
+                'website': obj.company.website,
+                'phone_number': obj.company.phone_number,
+                'industry': obj.company.industry,
             }
         return None
 
@@ -122,6 +127,9 @@ class NotificationSerializer(serializers.ModelSerializer):
     """Universal notification serializer for all actors."""
     internship_id = serializers.IntegerField(
         source='internship.id', read_only=True,
+    )
+    offer_id = serializers.IntegerField(
+        source='internship.offer.id', read_only=True, allow_null=True,
     )
     student_name = serializers.CharField(
         source='internship.student.full_name', read_only=True,
@@ -141,6 +149,7 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'internship_id',
+            'offer_id',
             'notification_type',
             'message',
             'link',

@@ -1,4 +1,5 @@
 """Views for the company internship offer and applicant management API."""
+from django.http import FileResponse
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import status, generics
@@ -425,4 +426,51 @@ class CompanyResetDataView(APIView):
                 'deleted_internships': deleted_internships[0],
             },
             status=status.HTTP_200_OK,
+        )
+
+
+@extend_schema(tags=['Company Applicants'])
+class DownloadAgreementView(APIView):
+    """
+    GET /api/company/applications/<id>/document/
+    Download the internship agreement PDF.
+    Only available when status = VALIDATED and a PDF has been generated.
+    """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsCompany]
+
+    @extend_schema(responses={200: OpenApiTypes.BINARY, 403: OpenApiTypes.OBJECT, 404: OpenApiTypes.OBJECT})
+    def get(self, request, pk):
+        company = get_company(request)
+
+        try:
+            application = Internship.objects.select_related(
+                'agreement',
+            ).get(pk=pk, company=company)
+        except Internship.DoesNotExist:
+            return Response(
+                {'detail': 'Application not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Must be validated
+        if application.status != Internship.Status.VALIDATED:
+            return Response(
+                {'detail': 'Agreement is not available yet. The internship must be validated first.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        # Must have a PDF
+        if not hasattr(application, 'agreement') or not application.agreement.pdf_file:
+            return Response(
+                {'detail': 'Agreement PDF has not been generated yet.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        application.agreement.pdf_file.open('rb')
+        return FileResponse(
+            application.agreement.pdf_file,
+            as_attachment=True,
+            filename=f'internship_agreement_{application.id}.pdf',
+            content_type='application/pdf',
         )

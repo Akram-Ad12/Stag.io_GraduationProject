@@ -13,7 +13,9 @@ import {
   FileText,
   TrendingUp,
   XCircle,
-  Wifi
+  Wifi,
+  Clock,
+  Calendar
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout';
 import StatusBadge from '../../components/StatusBadge';
@@ -32,7 +34,8 @@ import {
   getOfferApplicants,
   getCompanyStats,
   getCompanyOfferStats,
-  resetCompanyData
+  resetCompanyData,
+  downloadCompanyAgreement
 } from '../../api/companyApi';
 import { getAllSkills } from '../../api/publicApi';
 import { getMediaUrl } from '../../api/axios';
@@ -168,7 +171,7 @@ function InternshipsView({ offers, loading, handleEdit, handleDelete, setShowOff
           <p className="text-gray-500 font-medium mt-1">Manage your listings and review applicants.</p>
         </div>
         <button 
-          onClick={() => { setEditingOffer(null); setOfferForm({title:'', description:'', location:'', requirements:'', status:'open', imageFile:null, type:'unpaid', salary:'', duration_months:1, skills:[], is_remote:false}); setShowOfferModal(true); }}
+          onClick={() => { setEditingOffer(null); setOfferForm({title:'', description:'', location:'', requirements:'', status:'open', imageFile:null, type:'unpaid', salary:'', start_date: '', end_date: '', skills:[], is_remote:false}); setShowOfferModal(true); }}
           className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-xl font-black uppercase tracking-widest text-xs shadow-md hover:bg-indigo-700 transition-all shrink-0"
         >
           <Plus size={18} />
@@ -270,6 +273,19 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
     return () => { document.body.style.overflow = ''; };
   }, []);
 
+  useEffect(() => {
+    if (applications.length > 0) {
+      const params = new URLSearchParams(window.location.search);
+      const appId = params.get('appId');
+      if (appId) {
+        const matchingApp = applications.find(app => String(app.id) === appId);
+        if (matchingApp) {
+          setSelectedStudent(matchingApp);
+        }
+      }
+    }
+  }, [applications]);
+
   const loadOfferData = async () => {
     setLoading(true);
     try {
@@ -286,10 +302,31 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
     }
   };
 
+  const closeStudentView = () => {
+    setSelectedStudent(null);
+    navigate(`/company/internships/${id}`, { replace: true });
+  };
+
   const handleLocalResponse = async (appId, action) => {
     await handleAppResponse(appId, action);
     loadOfferData();
-    setSelectedStudent(null);
+    closeStudentView();
+  };
+
+  const handleDownloadAgreement = async (internshipId) => {
+    try {
+      const res = await downloadCompanyAgreement(internshipId);
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `convention_stage_${internshipId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('PDF download failed', err);
+    }
   };
 
   if (loading) return (
@@ -310,7 +347,7 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
     <Modal 
       title={selectedStudent ? "Digital CV" : "Offer Details"} 
       wide={true} 
-      onClose={() => selectedStudent ? setSelectedStudent(null) : navigate('/company/internships')}
+      onClose={() => selectedStudent ? closeStudentView() : navigate('/company/internships')}
     >
       {selectedStudent ? (
         <div className="flex flex-col lg:flex-row gap-8 items-start w-full max-w-7xl mx-auto animate-fade-in">
@@ -397,7 +434,7 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
                 <div>
                   <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Required Skills</p>
                   <div className="flex flex-wrap gap-2">
-                    {offer?.skills?.map((skill, index) => (
+                    {offer?.required_skills?.map((skill, index) => (
                       <span key={index} className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-black text-[10px] uppercase tracking-widest border border-indigo-100">
                         {skill.name}
                       </span>
@@ -411,7 +448,7 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
                 {selectedStudent.status === 'pending' ? (
                   <div className="flex gap-4">
                     <button 
-                      onClick={() => setSelectedStudent(null)}
+                      onClick={closeStudentView}
                       className="flex-1 py-4 bg-gray-50 text-gray-500 rounded-2xl font-black text-[11px] uppercase tracking-widest border border-gray-200 hover:bg-gray-100 transition-colors"
                     >
                       Keep Pending
@@ -440,7 +477,21 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
                         <p className="text-base font-black text-gray-900 mt-1 capitalize">{selectedStudent.status.replace(/_/g, ' ')}</p>
                       </div>
                     </div>
-                    <button onClick={() => setSelectedStudent(null)} className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline">Close View</button>
+                    {selectedStudent.status === 'validated' ? (
+                      <button 
+                        onClick={() => handleDownloadAgreement(selectedStudent.id)} 
+                        className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+                      >
+                        Download Agreement
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={closeStudentView} 
+                        className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+                      >
+                        Close View
+                      </button>
+                    )}
                   </div>
                 )}
               </div>
@@ -472,13 +523,74 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
               </span>
               <span className="text-sm font-bold text-gray-500">{offer.is_remote ? <span className="flex items-center gap-1"><Wifi size={14} /> Remote</span> : offer.wilaya || offer.location || 'Algeria'}</span>
               <span className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-md text-[10px] font-black uppercase tracking-widest border border-indigo-100">
-                {offer.duration_months} {offer.duration_months === 1 ? 'Month' : 'Months'}
+                {offer.duration_display || 'N/A'}
               </span>
             </div>
           </div>
           <button onClick={() => { navigate('/company/internships'); handleEdit(offer); }} className="px-6 py-3 bg-indigo-50 text-indigo-600 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-indigo-100 transition-colors flex items-center gap-2 shrink-0">
             <Edit2 size={16} /> Edit Offer
           </button>
+        </div>
+      </div>
+
+      {/* QUICK STATS & DESCRIPTION & SKILLS CARD */}
+      <div className="bg-white rounded-[32px] border border-gray-200 shadow-sm p-8 space-y-8">
+        {/* QUICK STATS GRID */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 border-b border-gray-100 pb-6">
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Clock size={12} /> Duration</p>
+            <p className="text-lg font-black text-gray-900">{offer.duration_display || 'N/A'}</p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5">
+              {offer.type === 'paid' ? '💰' : '💳'} Pay Status
+            </p>
+            <p className="text-lg font-black text-gray-900 capitalize">{offer.type || 'Unpaid'}</p>
+          </div>
+          {offer.type === 'paid' && offer.salary_per_week && (
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Zap size={12} /> Salary</p>
+              <p className="text-lg font-black text-emerald-600">{offer.salary_per_week} DA/wk</p>
+            </div>
+          )}
+          {offer.start_date && (
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Calendar size={12} /> Start Date</p>
+              <p className="text-sm font-black text-gray-900">{new Date(offer.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            </div>
+          )}
+          {offer.end_date && (
+            <div className="space-y-1">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Calendar size={12} /> End Date</p>
+              <p className="text-sm font-black text-gray-900">{new Date(offer.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            </div>
+          )}
+        </div>
+
+        {/* DESCRIPTION */}
+        <div className="space-y-3">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Offer Description</p>
+          {offer.description ? (
+            <p className="text-sm text-gray-600 font-medium leading-relaxed whitespace-pre-wrap">{offer.description}</p>
+          ) : (
+            <p className="text-sm text-gray-400 font-medium italic">No description provided.</p>
+          )}
+        </div>
+
+        {/* REQUIRED SKILLS */}
+        <div className="space-y-3">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Required Skills</p>
+          <div className="flex flex-wrap gap-2">
+            {offer.required_skills?.length > 0 ? (
+              offer.required_skills.map((skill, idx) => (
+                <span key={idx} className="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-black text-[10px] uppercase tracking-widest border border-indigo-100">
+                  {skill.name}
+                </span>
+              ))
+            ) : (
+              <p className="text-sm text-gray-400 font-medium italic">No specific skills required.</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -521,7 +633,7 @@ function CompanyOfferDetailView({ offers, handleEdit, handleAppResponse }) {
                   onClick={() => setSelectedStudent(app)}
                   className="flex-1 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-100 transition-colors"
                 >
-                  View Profile
+                  Review Application
                 </button>
               </div>
             </div>
@@ -800,7 +912,7 @@ export default function CompanyDashboard() {
       salary: offer.salary_per_week || '',
       start_date: offer.start_date || '',
       end_date: offer.end_date || '',
-      skills: offer.skills || [],
+      skills: offer.required_skills ? offer.required_skills.map(s => s.id) : [],
       is_remote: offer.is_remote || false,
     });
     setShowOfferModal(true);
@@ -898,8 +1010,8 @@ export default function CompanyDashboard() {
                 </div>
                 {offerForm.type === 'paid' && (
                   <div className="space-y-2">
-                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Monthly Stipend (DZD) *</label>
-                    <input type="number" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-900 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-50 focus:outline-none transition-all" value={offerForm.salary} onChange={e => setOfferForm({...offerForm, salary: e.target.value})} required placeholder="e.g. 20000" min="0" />
+                    <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Weekly Stipend (DZD) *</label>
+                    <input type="number" className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl font-bold text-gray-900 focus:border-indigo-600 focus:ring-2 focus:ring-indigo-50 focus:outline-none transition-all" value={offerForm.salary} onChange={e => setOfferForm({...offerForm, salary: e.target.value})} required placeholder="e.g. 5000" min="0" />
                   </div>
                 )}
               </div>
