@@ -13,6 +13,7 @@ import DashboardLayout from '../../components/DashboardLayout';
 import { 
   getStudentNotifications, 
   markStudentNotificationRead,
+  markAllStudentNotificationsRead,
   downloadStudentAgreement 
 } from '../../api/studentApi';
 
@@ -42,6 +43,15 @@ export default function NotificationsPage() {
       setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
     } catch (err) {
       console.error('Failed to mark as read', err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllStudentNotificationsRead();
+      setNotifications(notifications.map(n => ({ ...n, is_read: true })));
+    } catch (err) {
+      console.error('Failed to mark all as read', err);
     }
   };
 
@@ -76,13 +86,23 @@ export default function NotificationsPage() {
       <div className="p-8 lg:p-12 max-w-4xl mx-auto animate-fade-in min-h-screen pb-24">
         
         {/* HEADER */}
-        <div className="flex justify-between items-end mb-12">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-12">
           <div>
             <h1 className="text-4xl font-black text-gray-900 tracking-tight">Notifications</h1>
             <p className="text-gray-500 font-bold mt-1">Stay updated on your application status</p>
           </div>
-          <div className="bg-indigo-50 px-6 py-2 rounded-2xl border border-indigo-100 shadow-sm text-xs font-black text-indigo-600 uppercase tracking-widest">
-            {notifications.filter(n => !n.is_read).length} Unread
+          <div className="flex items-center gap-4">
+            {notifications.filter(n => !n.is_read).length > 0 && (
+              <button 
+                onClick={handleMarkAllRead}
+                className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+              >
+                Mark all as read
+              </button>
+            )}
+            <div className="bg-indigo-50 px-6 py-2 rounded-2xl border border-indigo-100 shadow-sm text-xs font-black text-indigo-600 uppercase tracking-widest">
+              {notifications.filter(n => !n.is_read).length} Unread
+            </div>
           </div>
         </div>
 

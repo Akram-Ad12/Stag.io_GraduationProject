@@ -45,6 +45,7 @@ export const removeSkill = (skillId) => api.delete(`/api/student/me/skills/${ski
 // Student Notifications (uses the shared core notification system)
 export const getStudentNotifications = () => api.get('/api/notifications/');
 export const markStudentNotificationRead = (id) => api.patch(`/api/notifications/${id}/read/`);
+export const markAllStudentNotificationsRead = () => api.patch('/api/notifications/read-all/');
 
 // Student Agreements (download via student application document endpoint)
 export const downloadStudentAgreement = (internshipId) => {

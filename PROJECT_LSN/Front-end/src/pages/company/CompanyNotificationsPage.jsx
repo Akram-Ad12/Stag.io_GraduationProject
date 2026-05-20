@@ -11,7 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/DashboardLayout';
 import { 
   getCompanyNotifications, 
-  markCompanyNotificationsRead
+  markCompanyNotificationsRead,
+  markCompanyNotificationRead
 } from '../../api/companyApi';
 
 export default function CompanyNotificationsPage() {
@@ -41,6 +42,15 @@ export default function CompanyNotificationsPage() {
       setNotifications(notifications.map(n => ({ ...n, is_read: true })));
     } catch (err) {
       console.error('Failed to mark all as read', err);
+    }
+  };
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await markCompanyNotificationRead(id);
+      setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
+    } catch (err) {
+      console.error('Failed to mark as read', err);
     }
   };
 
@@ -127,6 +137,14 @@ export default function CompanyNotificationsPage() {
                         className="flex items-center gap-2 px-5 py-2 bg-indigo-600 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-indigo-700 transition-all shadow-sm"
                       >
                         <ExternalLink size={14} /> Review Application
+                      </button>
+                    )}
+                    {!n.is_read && (
+                      <button 
+                        onClick={() => handleMarkAsRead(n.id)}
+                        className="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+                      >
+                        Mark as read
                       </button>
                     )}
                   </div>
