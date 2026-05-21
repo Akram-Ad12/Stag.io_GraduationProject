@@ -21,6 +21,28 @@ services:
       - DB_PASS=changeme
     depends_on:
       - db
+  cron:
+    build:
+      context: .
+      args:
+        - DEV=true
+    volumes:
+      - ./stag_io:/stag_io
+      - dev-static-data:/vol/web
+    user: root
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             while true; do
+               python manage.py close_expired_offers
+               sleep 86400
+             done"
+    environment:
+      - DB_HOST=db
+      - DB_NAME=devdb
+      - DB_USER=devuser
+      - DB_PASS=changeme
+    depends_on:
+      - db
   db:
     image: postgres:13-alpine
     volumes:

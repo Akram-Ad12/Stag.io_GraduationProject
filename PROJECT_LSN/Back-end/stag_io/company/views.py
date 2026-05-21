@@ -1,4 +1,5 @@
 """Views for the company internship offer and applicant management API."""
+from datetime import date
 from django.http import FileResponse
 from drf_spectacular.utils import extend_schema
 from drf_spectacular.types import OpenApiTypes
@@ -113,6 +114,15 @@ class OfferDetailView(APIView):
                 {'detail': 'Offer not found.'},
                 status=status.HTTP_404_NOT_FOUND,
             )
+
+        # Auto-close the offer if its start date has already passed
+        if (
+            offer.status == InternshipOffer.Status.OPEN
+            and offer.start_date <= date.today()
+        ):
+            offer.status = InternshipOffer.Status.CLOSED
+            offer.save(update_fields=['status'])
+
         serializer = UpdateInternshipOfferSerializer(
             offer, data=request.data, partial=True,
         )

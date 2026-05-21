@@ -1066,6 +1066,12 @@ export default function CompanyDashboard() {
                   <option value="open">Open (Accepting Applicants)</option>
                   <option value="closed">Closed (Not Accepting)</option>
                 </select>
+                {editingOffer && offerForm.start_date && new Date(offerForm.start_date) <= new Date(new Date().toDateString()) && offerForm.status === 'closed' && (
+                  <div className="p-3 bg-amber-50 border border-amber-100 text-amber-700 rounded-xl text-xs font-bold flex items-center gap-2">
+                    <Calendar size={14} className="shrink-0" />
+                    This offer's start date has passed. To reopen it, first change the start date to a future date.
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-[11px] font-black text-gray-500 uppercase tracking-widest">Offer Picture</label>
