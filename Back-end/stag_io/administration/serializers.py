@@ -63,6 +63,9 @@ class AdminInternshipSerializer(serializers.ModelSerializer):
     company_email = serializers.EmailField(
         source='company.email', read_only=True,
     )
+    student_image = serializers.ImageField(
+        source='student.profile_image', read_only=True,
+    )
 
     class Meta:
         model = Internship
@@ -79,6 +82,8 @@ class AdminInternshipSerializer(serializers.ModelSerializer):
             'start_date',
             'end_date',
             'status',
+            'student_image',
+            'rejection_reason',
             'created_at',
             'updated_at',
         ]
@@ -91,10 +96,31 @@ class AdminInternshipDetailSerializer(AdminInternshipSerializer):
     student_cv = StudentDigitalCVForAdminSerializer(
         source='student', read_only=True,
     )
+    offer_details = serializers.SerializerMethodField()
+    company_details = serializers.SerializerMethodField()
+
+    def get_offer_details(self, obj):
+        if obj.offer:
+            from company.serializers import InternshipOfferSerializer
+            return InternshipOfferSerializer(obj.offer).data
+        return None
+
+    def get_company_details(self, obj):
+        if obj.company:
+            return {
+                'logo': obj.company.logo.url if getattr(obj.company, 'logo', None) else None,
+                'name': obj.company.name,
+                'description': obj.company.description,
+                'wilaya': obj.company.wilaya,
+                'website': obj.company.website,
+                'phone_number': obj.company.phone_number,
+                'industry': obj.company.industry,
+            }
+        return None
 
     class Meta(AdminInternshipSerializer.Meta):
         fields = AdminInternshipSerializer.Meta.fields + [
-            'agreement', 'student_cv',
+            'agreement', 'student_cv', 'offer_details', 'company_details',
         ]
 
 
@@ -102,6 +128,9 @@ class NotificationSerializer(serializers.ModelSerializer):
     """Universal notification serializer for all actors."""
     internship_id = serializers.IntegerField(
         source='internship.id', read_only=True,
+    )
+    offer_id = serializers.IntegerField(
+        source='internship.offer.id', read_only=True, allow_null=True,
     )
     student_name = serializers.CharField(
         source='internship.student.full_name', read_only=True,
@@ -121,6 +150,7 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'internship_id',
+            'offer_id',
             'notification_type',
             'message',
             'link',

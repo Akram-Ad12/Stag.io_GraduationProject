@@ -68,6 +68,7 @@ class CompanyRegisterSerializer(serializers.ModelSerializer):
             'email', 'password',
             'name', 'description',
             'wilaya', 'website',
+            'phone_number',
         ]
 
     def create(self, validated_data):
@@ -82,10 +83,35 @@ class CompanyRegisterSerializer(serializers.ModelSerializer):
 class UserDetailSerializer(serializers.ModelSerializer):
     """Serializer for the authenticated user detail (GET /me)."""
 
+    profile_image = serializers.SerializerMethodField()
+    logo = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+
     class Meta:
         model = get_user_model()
-        fields = ['id', 'email', 'role', 'is_active', 'created_at']
+        fields = ['id', 'email', 'role', 'is_active', 'created_at', 'profile_image', 'logo', 'full_name', 'name']
         read_only_fields = ['id', 'role', 'is_active', 'created_at']
+
+    def get_profile_image(self, obj):
+        if obj.role == 'student' and hasattr(obj, 'student') and obj.student.profile_image:
+            return self.context['request'].build_absolute_uri(obj.student.profile_image.url) if 'request' in self.context else obj.student.profile_image.url
+        return None
+
+    def get_logo(self, obj):
+        if obj.role == 'company' and hasattr(obj, 'company') and obj.company.logo:
+            return self.context['request'].build_absolute_uri(obj.company.logo.url) if 'request' in self.context else obj.company.logo.url
+        return None
+
+    def get_full_name(self, obj):
+        if obj.role == 'student' and hasattr(obj, 'student'):
+            return obj.student.full_name
+        return None
+
+    def get_name(self, obj):
+        if obj.role == 'company' and hasattr(obj, 'company'):
+            return obj.company.name
+        return None
 
 
 class StudentUpdateSerializer(serializers.ModelSerializer):
@@ -96,9 +122,9 @@ class StudentUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email',
             'full_name', 'wilaya',
-            'date_of_birth',
+            'date_of_birth', 'profile_image',
         ]
-        read_only_fields = ['id', 'email']
+        read_only_fields = ['id', 'email', 'profile_image']
         extra_kwargs = {
             'full_name': {'required': False},
             'wilaya': {'required': False},
@@ -114,14 +140,17 @@ class CompanyUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email',
             'name', 'description',
-            'wilaya', 'website',
+            'wilaya', 'website', 'logo',
+            'phone_number', 'industry',
         ]
-        read_only_fields = ['id', 'email']
+        read_only_fields = ['id', 'email', 'logo']
         extra_kwargs = {
             'name': {'required': False},
             'description': {'required': False},
             'wilaya': {'required': False},
             'website': {'required': False, 'allow_blank': True},
+            'phone_number': {'required': False, 'allow_blank': True},
+            'industry': {'required': False, 'allow_blank': True},
         }
 
 class LogoImageSerializer(serializers.ModelSerializer):
@@ -146,3 +175,11 @@ class ProfileImageSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'profile_image': {'required': True},
         }
+
+
+class UniversitySerializer(serializers.ModelSerializer):
+    """Serializer for listing universities (public, no auth required)."""
+
+    class Meta:
+        model = University
+        fields = ['id', 'name', 'code', 'email_domain', 'wilaya']

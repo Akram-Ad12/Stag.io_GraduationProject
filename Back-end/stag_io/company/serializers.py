@@ -1,4 +1,6 @@
 """Serializers for the company internship offer API."""
+from datetime import date
+
 from rest_framework import serializers
 from core.models import InternshipOffer, OfferSkill
 from student.models import Skill
@@ -285,6 +287,16 @@ class UpdateInternshipOfferSerializer(serializers.ModelSerializer):
 
         if offer_type == InternshipOffer.Type.UNPAID:
             data['salary_per_week'] = None
+
+        # Prevent reopening an offer whose start date has already passed
+        new_status = data.get('status')
+        if new_status == InternshipOffer.Status.OPEN and start_date:
+            if start_date <= date.today():
+                raise serializers.ValidationError(
+                    'Cannot reopen this offer because its start date '
+                    'has already passed. Please update the start date '
+                    'to a future date before reopening.'
+                )
 
         return data
 

@@ -5,7 +5,6 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.template.loader import render_to_string
 from django.utils import timezone
-from weasyprint import HTML
 
 from core.models import Admin, Internship, InternshipAgreement
 
@@ -88,6 +87,7 @@ def generate_internship_agreement(internship, admin=None):
         'administration/convention_template.html',
         context,
     )
+    from weasyprint import HTML
     pdf_bytes = HTML(string=html_string, base_url=str(settings.MEDIA_ROOT)).write_pdf()
 
     agreement, _ = InternshipAgreement.objects.get_or_create(internship=internship)

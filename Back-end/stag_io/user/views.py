@@ -138,3 +138,13 @@ class StudentProfileImageUploadView(generics.UpdateAPIView):
         """Return the authenticated user's Student instance."""
         from core.models import Student
         return Student.objects.get(pk=self.request.user.pk)
+
+
+@extend_schema(tags=['Public'])
+class UniversityListView(generics.ListAPIView):
+    """Public list of all universities (no authentication required).
+    Used by the registration form and profile page."""
+    from core.models import University
+    from user.serializers import UniversitySerializer
+    serializer_class = UniversitySerializer
+    queryset = University.objects.all()

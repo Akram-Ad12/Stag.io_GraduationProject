@@ -267,6 +267,8 @@ class RejectInternshipView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        rejection_reason = request.data.get('rejection_reason', '')
+        internship.rejection_reason = rejection_reason
         internship.status = Internship.Status.REJECTED
         internship.save()
 
@@ -518,7 +520,10 @@ class StatisticsStudentsView(APIView):
 
         total_students = students_qs.count()
         students_with_internships = students_qs.filter(
-            internships__isnull=False,
+            internships__status__in=[
+                Internship.Status.ACCEPTED_BY_COMPANY,
+                Internship.Status.VALIDATED,
+            ],
         ).distinct().count()
 
         return Response(
@@ -590,5 +595,108 @@ class StatisticsCompanyDetailView(APIView):
         return Response(stats, status=status.HTTP_200_OK)
 
 
+# ── Mark all admin notifications as read ─────────────────────────────
+
+@extend_schema(tags=['Administration - Notifications'])
+class MarkAllAdminNotificationsReadView(APIView):
+    """
+    PATCH /api/administration/notifications/mark-all-read/
+    Mark ALL notifications for the admin as read.
+    """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(request=None, responses={200: OpenApiTypes.OBJECT})
+    def patch(self, request):
+        count = Notification.objects.filter(
+            recipient=request.user,
+            is_read=False,
+        ).update(is_read=True)
+        return Response(
+            {'detail': f'{count} notifications marked as read.'},
+            status=status.HTTP_200_OK,
+        )
 
 
+# ── Admin reset data ────────────────────────────────────────────────
+
+@extend_schema(tags=['Administration'])
+class AdminResetDataView(APIView):
+    """
+    POST /api/administration/reset-data/
+    Resets all internship data scoped to the admin's university.
+    Requires the admin's password for confirmation.
+    """
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAdminUser]
+
+    @extend_schema(request=None, responses={200: OpenApiTypes.OBJECT, 403: OpenApiTypes.OBJECT})
+    def post(self, request):
+        password = request.data.get('password')
+        if not password or not request.user.check_password(password):
+            return Response(
+                {'detail': 'Invalid password.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        admin = _get_admin(request)
+        deleted = Internship.objects.filter(
+            student__university=admin.university,
+        ).delete()
+
+        return Response(
+            {
+                'detail': 'All internship data for your university has been reset.',
+                'deleted_internships': deleted[0],
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+# ── Public endpoints (no authentication) ─────────────────────────────
+
+@extend_schema(tags=['Public'])
+class PublicCompanyListView(generics.ListAPIView):
+    """
+    GET /api/administration/public/companies/
+    Public list of all companies. No authentication required.
+    """
+    from company.serializers import InternshipOfferSerializer
+
+    def get_queryset(self):
+        from core.models import Company
+        return Company.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        from core.models import Company
+        companies = Company.objects.all()
+        data = [
+            {
+                'id': c.pk,
+                'name': c.name,
+                'description': c.description,
+                'logo': c.logo.url if c.logo else None,
+                'wilaya': c.wilaya,
+                'website': c.website,
+            }
+            for c in companies
+        ]
+        return Response(data, status=status.HTTP_200_OK)
+
+
+@extend_schema(tags=['Public'])
+class PublicOfferListView(generics.ListAPIView):
+    """
+    GET /api/administration/public/offers/
+    Public list of all active (open) offers. No authentication required.
+    """
+    from company.serializers import InternshipOfferSerializer
+    serializer_class = InternshipOfferSerializer
+
+    def get_queryset(self):
+        from core.models import InternshipOffer
+        return InternshipOffer.objects.filter(
+            status=InternshipOffer.Status.OPEN,
+        ).select_related('company').prefetch_related(
+            'offer_skills__skill',
+        ).order_by('-created_at')

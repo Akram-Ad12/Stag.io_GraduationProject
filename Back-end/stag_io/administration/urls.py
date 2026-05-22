@@ -89,5 +89,27 @@ urlpatterns = [
         views.StatisticsCompanyDetailView.as_view(),
         name='statistics-company-detail',
     ),
+    # Mark all admin notifications as read
+    path(
+        'notifications/mark-all-read/',
+        views.MarkAllAdminNotificationsReadView.as_view(),
+        name='notifications-mark-all-read',
+    ),
+    # Reset data
+    path(
+        'reset-data/',
+        views.AdminResetDataView.as_view(),
+        name='admin-reset-data',
+    ),
+    # Public endpoints (no auth)
+    path(
+        'public/companies/',
+        views.PublicCompanyListView.as_view(),
+        name='public-companies',
+    ),
+    path(
+        'public/offers/',
+        views.PublicOfferListView.as_view(),
+        name='public-offers',
+    ),
 ]
-
