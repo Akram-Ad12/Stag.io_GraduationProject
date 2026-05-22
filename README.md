@@ -33,20 +33,19 @@ The front-end is intended to contain the user interface of the platform:
 
 In short, the `Front-end/` folder is the **presentation layer** of Stag.io.
 
-Note: At the moment, this repository currently includes the back-end folder. Add the front-end folder in this same repository (or reference its repository) when available.
-
 ---
 
 ## Tech Stack
 
 | Layer     | Technology                                      |
 | --------- | ----------------------------------------------- |
-| Framework | Django 3.2 + Django REST Framework 3.12         |
+| Backend   | Django 3.2 + Django REST Framework 3.12         |
+| Frontend  | React, Vite, Tailwind CSS                       |
 | Auth      | Simple JWT (access 30 min / refresh 7 days)     |
 | Database  | PostgreSQL 13                                   |
 | Docs      | drf-spectacular (Swagger UI)                    |
 | Container | Docker & Docker Compose                         |
-| Linting   | Flake8                                          |
+| Linting   | Flake8, ESLint                                  |
 
 ---
 
@@ -91,14 +90,24 @@ Swagger docs available at `/api/docs/`.
 
 ### Run
 
+**1. Back-end**
 ```bash
 git clone https://github.com/abderrahmannemmour-code/PROJECT_LSN.git
 cd PROJECT_LSN/Back-end
 docker-compose up --build
 ```
 
-The server starts at **http://localhost:8000**.  
+The API server starts at **http://localhost:8000**.  
 Migrations run automatically on startup.
+
+**2. Front-end**
+```bash
+cd ../Front-end
+npm install
+npm run dev
+```
+
+The frontend client typically starts at **http://localhost:5173**.
 
 ### Useful Commands
 
@@ -136,4 +145,14 @@ Back-end/
     ├── core/           # Custom user models, wait_for_db command
     ├── user/           # Registration, auth, profile API
     └── stag_io/        # Django settings & URL config
+
+Front-end/
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+└── src/
+    ├── api/            # API integration endpoints
+    ├── components/     # Reusable React components
+    ├── pages/          # View components organized by role
+    └── context/        # React context (e.g., AuthContext)
 ```
