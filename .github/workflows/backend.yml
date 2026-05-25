@@ -1,12 +1,15 @@
 name: Backend CI
 
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'Back-end/**'
+      - '.github/workflows/backend.yml'
   pull_request:
     paths:
       - 'Back-end/**'
+      - '.github/workflows/backend.yml'
 
 jobs:
   test:
