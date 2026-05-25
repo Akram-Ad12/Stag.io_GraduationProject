@@ -21,4 +21,4 @@ jobs:
     - name: Build and Run tests via Docker Compose
       run: |
         cd Back-end
-        docker-compose run --rm stag_io sh -c "python manage.py test"
+        docker compose run --rm stag_io sh -c "python manage.py test"
