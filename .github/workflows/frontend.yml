@@ -1,0 +1,35 @@
+name: Frontend CI
+
+on:
+  push:
+    paths:
+      - 'Front-end/**'
+  pull_request:
+    paths:
+      - 'Front-end/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # Using Node 20 as Vite/React latest typically use it
+        cache: 'npm'
+        cache-dependency-path: 'Front-end/package-lock.json'
+        
+    - name: Install dependencies
+      working-directory: ./Front-end
+      run: npm ci
+        
+    - name: Check Linting
+      working-directory: ./Front-end
+      run: npm run lint --if-present
+        
+    - name: Build Project
+      working-directory: ./Front-end
+      run: npm run build
