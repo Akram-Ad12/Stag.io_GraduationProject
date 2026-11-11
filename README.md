@@ -29,24 +29,24 @@ Under the hood:
 ## Screenshots
 
 ### Student
-![Explore offers](Stag.io_readme_package/docs/screenshots/student-explore-offers.png)
-![My applications](Stag.io_readme_package/docs/screenshots/student-my-applications.png)
+![Explore offers](docs/screenshots/student-explore-offers.png)
+![My applications](docs/screenshots/student-my-applications.png)
 
 ### Company
-![Company dashboard](Stag.io_readme_package/docs/screenshots/company-dashboard.png)
-![Internship offers](Stag.io_readme_package/docs/screenshots/company-offers.png)
+![Company dashboard](docs/screenshots/company-dashboard.png)
+![Internship offers](docs/screenshots/company-offers.png)
 ![Recruitment analytics](docs/screenshots/company-analytics.png)
 
 ### Administration
-![Admin dashboard](Stag.io_readme_package/docs/screenshots/admin-dashboard.png)
+![Admin dashboard](docs/screenshots/admin-dashboard.png)
 
 ## Design (UML)
 
 Analysis and design were done with Astah UML: use case, class, activity, sequence and navigation diagrams, plus textual use-case descriptions.
 
-![Student use case diagram](Stag.io_readme_package/docs/uml/student-use-case.png)
-![Sequence diagram: create internship offer](Stag.io_readme_package/docs/uml/sequence-create-offer.png)
-![Relational model](Stag.io_readme_package/docs/uml/relational-model.png)
+![Student use case diagram](docs/uml/student-use-case.png)
+![Sequence diagram: create internship offer](docs/uml/sequence-create-offer.png)
+![Relational model](docs/uml/relational-model.png)
 
 ## Tech stack
 
@@ -145,6 +145,7 @@ Team of three. My part:
 - **Backend and database:** Django 3.2 + Django REST Framework 3.12 + PostgreSQL, run locally with Docker (pair-developed with a teammate)
 - **Features:** mainly the student and company actors and everything related to them
 - **Documentation:** helped in writing the graduation thesis (can be found in Stag.io_GraduationProject/Stag.io_readme_package)
+- **My commits:** [Akram_branch](https://github.com/abderrahmannemmour-code/PROJECT_LSN/commits/Akram_branch/)_ on the team repository
 
-Teammates: _[Nemour Abderahmene](https://github.com/abderrahmannemmour-code)_ and _[Cheniti el houceine chiheb eddine](https://github.com/chihebcheniti)_
+Teammates: _[Nemour Abderahmene](https://github.com/abderrahmannemmour-code) and _[Cheniti el houceine chiheb eddine](https://github.com/chihebcheniti)_
 
