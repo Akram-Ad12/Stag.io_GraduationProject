@@ -145,7 +145,7 @@ Team of three. My part:
 - **Analysis and design:** UML diagrams (use case, class, activity, sequence, navigation) with Astah UML, and the textual use-case descriptions the application is built on
 - **Backend and database:** Django 3.2 + Django REST Framework 3.12 + PostgreSQL, run locally with Docker (pair-developed with a teammate)
 - **Features:** mainly the student and company actors and everything related to them
-- **Documentation:** helped in writing the graduation thesis (can be found in Stag.io_GraduationProject/docs/graduation-thesis.pdf)
+- **Documentation:** helped in writing the graduation thesis (can be found in [graduation thesis](docs/graduation-thesis.pdf))
 
-Teammates: [Nemour Abderahmene](https://github.com/abderrahmannemmour-code) and [Cheniti el houceine chiheb eddine](https://github.com/chihebcheniti)_
+Teammates: [Nemour Abderahmene](https://github.com/abderrahmannemmour-code) and [Cheniti el houceine chiheb eddine](https://github.com/chihebcheniti)
 
