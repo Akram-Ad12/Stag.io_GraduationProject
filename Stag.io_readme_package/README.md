@@ -144,10 +144,7 @@ Team of three. My part:
 - **Analysis and design:** UML diagrams (use case, class, activity, sequence, navigation) with Astah UML, and the textual use-case descriptions the application is built on
 - **Backend and database:** Django 3.2 + Django REST Framework 3.12 + PostgreSQL, run locally with Docker (pair-developed with a teammate)
 - **Features:** mainly the student and company actors and everything related to them
-- **Documentation:** wrote the graduation thesis
+- **Documentation:** helped in writing the graduation thesis (can be found in docs/graduation-thesis.pdf)
 
-Teammates: _[Name 1](https://github.com/...)_ and _[Name 2](https://github.com/...)_
+Teammates: _[Nemour Abderahmene](https://github.com/abderrahmannemmour-code)_ and _[Cheniti el houceine chiheb eddine](https://github.com/chihebcheniti)_
 
-## License
-
-Academic project. Add a license here if you want others to reuse the code.
