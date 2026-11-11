@@ -4,6 +4,7 @@
 Built with Django REST Framework, React and PostgreSQL. Bachelor's graduation project (L3 Information Technologies, Constantine 2 University, 2025/2026), developed by a team of three.
 
 > This repository is my fork of the team repository: <https://github.com/abderrahmannemmour-code/PROJECT_LSN>
+> **My commits:** [Akram_branch](https://github.com/abderrahmannemmour-code/PROJECT_LSN/commits/Akram_branch/) on the team repository
 
 ## The problem
 
@@ -144,8 +145,7 @@ Team of three. My part:
 - **Analysis and design:** UML diagrams (use case, class, activity, sequence, navigation) with Astah UML, and the textual use-case descriptions the application is built on
 - **Backend and database:** Django 3.2 + Django REST Framework 3.12 + PostgreSQL, run locally with Docker (pair-developed with a teammate)
 - **Features:** mainly the student and company actors and everything related to them
-- **Documentation:** helped in writing the graduation thesis (can be found in Stag.io_GraduationProject/Stag.io_readme_package)
-- **My commits:** [Akram_branch](https://github.com/abderrahmannemmour-code/PROJECT_LSN/commits/Akram_branch/)_ on the team repository
+- **Documentation:** helped in writing the graduation thesis (can be found in Stag.io_GraduationProject/docs/graduation-thesis.pdf)
 
-Teammates: _[Nemour Abderahmene](https://github.com/abderrahmannemmour-code) and _[Cheniti el houceine chiheb eddine](https://github.com/chihebcheniti)_
+Teammates: [Nemour Abderahmene](https://github.com/abderrahmannemmour-code) and [Cheniti el houceine chiheb eddine](https://github.com/chihebcheniti)_
 
