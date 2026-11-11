@@ -29,24 +29,24 @@ Under the hood:
 ## Screenshots
 
 ### Student
-![Explore offers](docs/screenshots/student-explore-offers.png)
-![My applications](docs/screenshots/student-my-applications.png)
+![Explore offers](Stag.io_readme_package/docs/screenshots/student-explore-offers.png)
+![My applications](Stag.io_readme_package/docs/screenshots/student-my-applications.png)
 
 ### Company
-![Company dashboard](docs/screenshots/company-dashboard.png)
-![Internship offers](docs/screenshots/company-offers.png)
+![Company dashboard](Stag.io_readme_package/docs/screenshots/company-dashboard.png)
+![Internship offers](Stag.io_readme_package/docs/screenshots/company-offers.png)
 ![Recruitment analytics](docs/screenshots/company-analytics.png)
 
 ### Administration
-![Admin dashboard](docs/screenshots/admin-dashboard.png)
+![Admin dashboard](Stag.io_readme_package/docs/screenshots/admin-dashboard.png)
 
 ## Design (UML)
 
 Analysis and design were done with Astah UML: use case, class, activity, sequence and navigation diagrams, plus textual use-case descriptions.
 
-![Student use case diagram](docs/uml/student-use-case.png)
-![Sequence diagram: create internship offer](docs/uml/sequence-create-offer.png)
-![Relational model](docs/uml/relational-model.png)
+![Student use case diagram](Stag.io_readme_package/docs/uml/student-use-case.png)
+![Sequence diagram: create internship offer](Stag.io_readme_package/docs/uml/sequence-create-offer.png)
+![Relational model](Stag.io_readme_package/docs/uml/relational-model.png)
 
 ## Tech stack
 
