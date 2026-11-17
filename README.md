@@ -26,6 +26,7 @@ Under the hood:
 - Automatic PDF generation of the internship agreement
 - Offer search and filtering by type, location, duration and remote option
 - Interactive API documentation (Swagger UI, drf-spectacular) at `/api/docs/`
+- 46-endpoint REST API over a 12-table PostgreSQL schema.
 
 ## Screenshots
 
